@@ -21,7 +21,7 @@ pub fn ipv4_payload(pkt: &[u8]) -> io::Result<&[u8]> {
     Ok(&pkt[hdr_len..])
 }
 
-fn calculate_checksum(data: &[u8], skip: Option<Range<usize>>) -> u16 {
+fn calculate_sum(data: &[u8], skip: Option<Range<usize>>) -> u32 {
     let mut sum = 0u32;
     for (i, &byte) in data.iter().enumerate() {
         if let Some(skip) = &skip {
@@ -38,6 +38,10 @@ fn calculate_checksum(data: &[u8], skip: Option<Range<usize>>) -> u16 {
             }
         }
     }
+    sum
+}
+
+fn calculate_checksum(mut sum: u32) -> u16 {
     while (sum >> 16) != 0 {
         sum = (sum & 0xffff) + (sum >> 16);
     }

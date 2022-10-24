@@ -1,6 +1,6 @@
 use std::io;
 
-use crate::calculate_checksum;
+use crate::{calculate_checksum, calculate_sum};
 
 #[derive(Debug)]
 pub enum IcmpVersion {
@@ -62,7 +62,8 @@ impl<'buf> IcmpKind<'buf> {
         };
         let pkt_len = pkt.len();
         if let IcmpVersion::V4 = version {
-            let checksum = calculate_checksum(pkt, None);
+            let sum = calculate_sum(pkt, None);
+            let checksum = calculate_checksum(sum);
             buf[2..4].copy_from_slice(&checksum.to_be_bytes());
         } // IPv6: checksum is calculated by the kernel
         Ok(pkt_len)
@@ -80,7 +81,8 @@ impl<'buf> IcmpKind<'buf> {
         // kernel should have already validated checksum
         // let checksum = u16::from_be_bytes([pkt[2], pkt[3]]);
         // if let ICMPVersion::V4 = version {
-        //     let calculated_checksum = calculate_checksum(pkt, Some(2..4));
+        //     let sum = calculate_sum(pkt, Some(2..4));
+        //     let calculated_checksum = calculate_checksum(sum);
         //     if checksum != calculated_checksum {
         //         return Err(io::Error::new(
         //             io::ErrorKind::InvalidData,
