@@ -10,7 +10,7 @@ mod tests {
     use tokio_socket2::TokioSocket2;
 
     #[tokio::test]
-    async fn ping_ipv4() -> io::Result<()> {
+    async fn ipv4_ping() -> io::Result<()> {
         let dst_ips = vec![
             // Cloudflare DNS
             "1.1.1.1".parse().unwrap(),
@@ -54,7 +54,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn ping_ipv6() -> io::Result<()> {
+    async fn ipv6_ping() -> io::Result<()> {
         let dst_ips = vec![
             // Cloudflare DNS
             "2606:4700:4700::1111".parse().unwrap(),
