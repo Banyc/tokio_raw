@@ -21,7 +21,15 @@ pub async fn send_ipv4_echo<'echo_buf>(
     let pkt_len = ping.encode(buf, ICMPVersion::V4)?;
     let pkt = &buf[..pkt_len];
     let dst = SockAddr::from(dst);
-    let written_len = client.write(|socket| socket.send_to(&pkt, &dst)).await?;
+    let written_len = loop {
+        match client.write(|socket| socket.send_to(&pkt, &dst)).await {
+            Ok(v) => break Ok(v),
+            Err(e) => match e.kind() {
+                io::ErrorKind::WouldBlock => continue,
+                _ => break Err(e),
+            },
+        }
+    }?;
     Ok(written_len)
 }
 
@@ -36,7 +44,15 @@ pub async fn send_ipv6_echo<'echo_buf>(
     let pkt_len = ping.encode(buf, ICMPVersion::V6)?;
     let pkt = &buf[..pkt_len];
     let dst = SockAddr::from(dst);
-    let written_len = client.write(|socket| socket.send_to(&pkt, &dst)).await?;
+    let written_len = loop {
+        match client.write(|socket| socket.send_to(&pkt, &dst)).await {
+            Ok(v) => break Ok(v),
+            Err(e) => match e.kind() {
+                io::ErrorKind::WouldBlock => continue,
+                _ => break Err(e),
+            },
+        }
+    }?;
     Ok(written_len)
 }
 
