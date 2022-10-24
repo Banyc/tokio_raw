@@ -3,6 +3,7 @@ use std::{io, ops::Range};
 pub mod echo;
 pub mod echo_test;
 pub mod icmp;
+pub mod tcp;
 
 pub fn ipv4_payload(pkt: &[u8]) -> io::Result<&[u8]> {
     if pkt.len() < 20 {
