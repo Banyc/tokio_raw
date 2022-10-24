@@ -45,6 +45,7 @@ pub async fn recv_echo<'buf>(
     client: &TokioSocket2,
     dst_ip: &IpAddr,
     identifier: u16,
+    strip_ipv4_header: bool,
 ) -> io::Result<ICMPEcho<'buf>> {
     loop {
         let (pkt_len, from, buf) = client
@@ -70,7 +71,13 @@ pub async fn recv_echo<'buf>(
 
         // remove the IP header
         let ip_payload = match from.ip() {
-            std::net::IpAddr::V4(_) => ipv4_payload(pkt)?,
+            std::net::IpAddr::V4(_) => {
+                if strip_ipv4_header {
+                    ipv4_payload(pkt)?
+                } else {
+                    pkt
+                }
+            }
             std::net::IpAddr::V6(_) => pkt,
         };
 

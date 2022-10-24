@@ -35,7 +35,8 @@ mod tests {
                 eprintln!("written_len: {}", written_len);
 
                 let mut buf = [0u8; 64];
-                let echo = recv_echo(&mut buf, &client, &IpAddr::V4(dst_ip), identifier).await?;
+                let echo =
+                    recv_echo(&mut buf, &client, &IpAddr::V4(dst_ip), identifier, true).await?;
 
                 assert_eq!(echo.seq, seq);
                 assert_eq!(echo.identifier, identifier);
@@ -79,7 +80,8 @@ mod tests {
                 eprintln!("written_len: {}", written_len);
 
                 let mut buf = [0u8; 64];
-                let echo = recv_echo(&mut buf, &client, &IpAddr::V6(dst_ip), identifier).await?;
+                let echo =
+                    recv_echo(&mut buf, &client, &IpAddr::V6(dst_ip), identifier, true).await?;
 
                 assert_eq!(echo.seq, seq);
                 assert_eq!(echo.identifier, identifier);
