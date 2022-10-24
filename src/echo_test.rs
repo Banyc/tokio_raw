@@ -2,7 +2,10 @@
 mod tests {
     use std::{io, net::IpAddr};
 
-    use crate::{icmp::ICMPEcho, recv_echo, send_ipv4_echo, send_ipv6_echo};
+    use crate::{
+        echo::{recv_echo, send_ipv4_echo, send_ipv6_echo},
+        icmp::ICMPEcho,
+    };
     use socket2::{Domain, Protocol, Type};
     use tokio_socket2::TokioSocket2;
 
