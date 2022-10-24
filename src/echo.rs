@@ -4,7 +4,7 @@ use std::{
 };
 
 use crate::{
-    icmp::{ICMPEcho, ICMPKind, ICMPVersion},
+    icmp::{IcmpEcho, IcmpKind, IcmpVersion},
     ipv4_payload,
 };
 use socket2::SockAddr;
@@ -14,11 +14,11 @@ pub async fn send_ipv4_echo<'echo_buf>(
     buf: &mut [u8],
     client: &TokioSocket2,
     dst_ip: Ipv4Addr,
-    echo: ICMPEcho<'echo_buf>,
+    echo: IcmpEcho<'echo_buf>,
 ) -> io::Result<usize> {
     let dst = SocketAddr::new(IpAddr::V4(dst_ip), 0);
-    let ping = ICMPKind::EchoRequest(echo);
-    let pkt_len = ping.encode(buf, ICMPVersion::V4)?;
+    let ping = IcmpKind::EchoRequest(echo);
+    let pkt_len = ping.encode(buf, IcmpVersion::V4)?;
     let pkt = &buf[..pkt_len];
     let dst = SockAddr::from(dst);
     let written_len = loop {
@@ -37,11 +37,11 @@ pub async fn send_ipv6_echo<'echo_buf>(
     buf: &mut [u8],
     client: &TokioSocket2,
     dst_ip: Ipv6Addr,
-    echo: ICMPEcho<'echo_buf>,
+    echo: IcmpEcho<'echo_buf>,
 ) -> io::Result<usize> {
     let dst = SocketAddr::new(IpAddr::V6(dst_ip), 0);
-    let ping = ICMPKind::EchoRequest(echo);
-    let pkt_len = ping.encode(buf, ICMPVersion::V6)?;
+    let ping = IcmpKind::EchoRequest(echo);
+    let pkt_len = ping.encode(buf, IcmpVersion::V6)?;
     let pkt = &buf[..pkt_len];
     let dst = SockAddr::from(dst);
     let written_len = loop {
@@ -62,7 +62,7 @@ pub async fn recv_echo<'buf>(
     dst_ip: &IpAddr,
     identifier: u16,
     strip_ipv4_header: bool,
-) -> io::Result<ICMPEcho<'buf>> {
+) -> io::Result<IcmpEcho<'buf>> {
     loop {
         let (pkt_len, from, buf) = client
             .read(|socket| {
@@ -98,11 +98,11 @@ pub async fn recv_echo<'buf>(
         };
 
         let pong = match from.ip() {
-            std::net::IpAddr::V4(_) => ICMPKind::decode(ip_payload, ICMPVersion::V4)?,
-            std::net::IpAddr::V6(_) => ICMPKind::decode(ip_payload, ICMPVersion::V6)?,
+            std::net::IpAddr::V4(_) => IcmpKind::decode(ip_payload, IcmpVersion::V4)?,
+            std::net::IpAddr::V6(_) => IcmpKind::decode(ip_payload, IcmpVersion::V6)?,
         };
 
-        if let ICMPKind::EchoReply(echo) = pong {
+        if let IcmpKind::EchoReply(echo) = pong {
             if echo.identifier == identifier {
                 return Ok(echo);
             }

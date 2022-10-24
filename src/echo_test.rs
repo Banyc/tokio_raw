@@ -4,7 +4,7 @@ mod tests {
 
     use crate::{
         echo::{recv_echo, send_ipv4_echo, send_ipv6_echo},
-        icmp::ICMPEcho,
+        icmp::IcmpEcho,
     };
     use socket2::{Domain, Protocol, Type};
     use tokio_socket2::TokioSocket2;
@@ -29,7 +29,7 @@ mod tests {
 
         for dst_ip in dst_ips {
             for &seq in &seqs {
-                let echo = ICMPEcho {
+                let echo = IcmpEcho {
                     seq,
                     identifier,
                     data: &echo_data,
@@ -75,7 +75,7 @@ mod tests {
 
         for dst_ip in dst_ips {
             for &seq in &seqs {
-                let echo = ICMPEcho {
+                let echo = IcmpEcho {
                     seq,
                     identifier,
                     data: &echo_data,

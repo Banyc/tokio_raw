@@ -3,20 +3,20 @@ use std::io;
 use crate::calculate_checksum;
 
 #[derive(Debug)]
-pub enum ICMPVersion {
+pub enum IcmpVersion {
     V4,
     V6,
 }
 
 #[derive(Debug)]
-pub enum ICMPKind<'buf> {
-    EchoRequest(ICMPEcho<'buf>),
-    EchoReply(ICMPEcho<'buf>),
+pub enum IcmpKind<'buf> {
+    EchoRequest(IcmpEcho<'buf>),
+    EchoReply(IcmpEcho<'buf>),
     Other { ty: u8, code: u8, data: &'buf [u8] },
 }
 
-impl<'buf> ICMPKind<'buf> {
-    pub fn encode(&self, buf: &mut [u8], version: ICMPVersion) -> io::Result<usize> {
+impl<'buf> IcmpKind<'buf> {
+    pub fn encode(&self, buf: &mut [u8], version: IcmpVersion) -> io::Result<usize> {
         if buf.len() < 8 {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
@@ -24,12 +24,12 @@ impl<'buf> ICMPKind<'buf> {
             ));
         }
         let pkt = match self {
-            ICMPKind::EchoRequest(echo) => {
+            IcmpKind::EchoRequest(echo) => {
                 match version {
-                    ICMPVersion::V4 => {
+                    IcmpVersion::V4 => {
                         buf[0] = 8;
                     }
-                    ICMPVersion::V6 => {
+                    IcmpVersion::V6 => {
                         buf[0] = 128;
                     }
                 } // type
@@ -38,12 +38,12 @@ impl<'buf> ICMPKind<'buf> {
                 let data_len = echo.encode(&mut buf[4..]);
                 &buf[..4 + data_len]
             }
-            ICMPKind::EchoReply(echo) => {
+            IcmpKind::EchoReply(echo) => {
                 match version {
-                    ICMPVersion::V4 => {
+                    IcmpVersion::V4 => {
                         buf[0] = 0;
                     }
-                    ICMPVersion::V6 => {
+                    IcmpVersion::V6 => {
                         buf[0] = 129;
                     }
                 } // type
@@ -52,7 +52,7 @@ impl<'buf> ICMPKind<'buf> {
                 let data_len = echo.encode(&mut buf[4..]);
                 &buf[..4 + data_len]
             }
-            ICMPKind::Other { ty, code, data } => {
+            IcmpKind::Other { ty, code, data } => {
                 buf[0] = *ty;
                 buf[1] = *code;
                 buf[2..4].copy_from_slice(&(0u16).to_be_bytes()); // checksum
@@ -61,14 +61,14 @@ impl<'buf> ICMPKind<'buf> {
             }
         };
         let pkt_len = pkt.len();
-        if let ICMPVersion::V4 = version {
+        if let IcmpVersion::V4 = version {
             let checksum = calculate_checksum(pkt, None);
             buf[2..4].copy_from_slice(&checksum.to_be_bytes());
         } // IPv6: checksum is calculated by the kernel
         Ok(pkt_len)
     }
 
-    pub fn decode(pkt: &'buf [u8], version: ICMPVersion) -> io::Result<Self> {
+    pub fn decode(pkt: &'buf [u8], version: IcmpVersion) -> io::Result<Self> {
         if pkt.len() < 8 {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
@@ -90,25 +90,25 @@ impl<'buf> ICMPKind<'buf> {
         // } // checksums of ICMP v6 involve IPv6 pseudo-header (https://www.rfc-editor.org/rfc/rfc2460#section-8.1)
         let data = &pkt[4..];
         match (version, ty, code) {
-            (ICMPVersion::V4, 8, 0) | (ICMPVersion::V6, 128, 0) => {
-                Ok(ICMPKind::EchoRequest(ICMPEcho::decode(data)?))
+            (IcmpVersion::V4, 8, 0) | (IcmpVersion::V6, 128, 0) => {
+                Ok(IcmpKind::EchoRequest(IcmpEcho::decode(data)?))
             }
-            (ICMPVersion::V4, 0, 0) | (ICMPVersion::V6, 129, 0) => {
-                Ok(ICMPKind::EchoReply(ICMPEcho::decode(data)?))
+            (IcmpVersion::V4, 0, 0) | (IcmpVersion::V6, 129, 0) => {
+                Ok(IcmpKind::EchoReply(IcmpEcho::decode(data)?))
             }
-            _ => Ok(ICMPKind::Other { ty, code, data }),
+            _ => Ok(IcmpKind::Other { ty, code, data }),
         }
     }
 }
 
 #[derive(Debug)]
-pub struct ICMPEcho<'buf> {
+pub struct IcmpEcho<'buf> {
     pub identifier: u16,
     pub seq: u16,
     pub data: &'buf [u8],
 }
 
-impl<'buf> ICMPEcho<'buf> {
+impl<'buf> IcmpEcho<'buf> {
     pub fn encode(&self, buf: &mut [u8]) -> usize {
         buf[0..2].copy_from_slice(&self.identifier.to_be_bytes());
         buf[2..4].copy_from_slice(&self.seq.to_be_bytes());
@@ -126,7 +126,7 @@ impl<'buf> ICMPEcho<'buf> {
         let identifier = u16::from_be_bytes([pkt[0], pkt[1]]);
         let seq = u16::from_be_bytes([pkt[2], pkt[3]]);
         let data = &pkt[4..];
-        Ok(ICMPEcho {
+        Ok(IcmpEcho {
             identifier,
             seq,
             data,
