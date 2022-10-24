@@ -99,8 +99,10 @@ impl<'buf> ICMPKind<'buf> {
             }
         };
         let pkt_len = pkt.len();
-        let checksum = calculate_checksum(pkt, None);
-        buf[2..4].copy_from_slice(&checksum.to_be_bytes());
+        if let ICMPVersion::V4 = version {
+            let checksum = calculate_checksum(pkt, None);
+            buf[2..4].copy_from_slice(&checksum.to_be_bytes());
+        } // IPv6: checksum is calculated by the kernel
         Ok(pkt_len)
     }
 
