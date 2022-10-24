@@ -64,14 +64,25 @@ pub async fn recv_echo<'buf>(
     strip_ipv4_header: bool,
 ) -> io::Result<IcmpEcho<'buf>> {
     loop {
-        let (pkt_len, from, buf) = client
-            .read(|socket| {
-                let buf = unsafe { mem::transmute::<&mut [u8], &mut [mem::MaybeUninit<u8>]>(buf) };
-                let (pkt_len, from) = socket.recv_from(buf)?;
-                let buf = unsafe { mem::transmute::<&mut [mem::MaybeUninit<u8>], &mut [u8]>(buf) };
-                Ok((pkt_len, from, buf))
-            })
-            .await?;
+        let (pkt_len, from, buf) = loop {
+            match client
+                .read(|socket| {
+                    let buf =
+                        unsafe { mem::transmute::<&mut [u8], &mut [mem::MaybeUninit<u8>]>(buf) };
+                    let (pkt_len, from) = socket.recv_from(buf)?;
+                    let buf =
+                        unsafe { mem::transmute::<&mut [mem::MaybeUninit<u8>], &mut [u8]>(buf) };
+                    Ok((pkt_len, from, buf))
+                })
+                .await
+            {
+                Ok(v) => break Ok(v),
+                Err(e) => match e.kind() {
+                    io::ErrorKind::WouldBlock => continue,
+                    _ => break Err(e),
+                },
+            }
+        }?;
 
         if let None = from.as_socket() {
             continue;
