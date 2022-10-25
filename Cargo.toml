@@ -11,4 +11,5 @@ tokio = "1.21.2"
 tokio_socket2 = "0.1.0"
 
 [dev-dependencies]
+local-ip-address = "0.4.9"
 sudo = "0.6.0"
