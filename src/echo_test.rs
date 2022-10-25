@@ -19,7 +19,12 @@ mod tests {
         ];
         let seqs = vec![0, 1, 2, 3, 4, 5];
 
-        let socket = socket2::Socket::new(Domain::IPV4, Type::DGRAM, Some(Protocol::ICMPV4))?;
+        let socket = if cfg!(target_os = "linux") {
+            sudo::escalate_if_needed().unwrap();
+            socket2::Socket::new(Domain::IPV4, Type::RAW, Some(Protocol::ICMPV4))?
+        } else {
+            socket2::Socket::new(Domain::IPV4, Type::DGRAM, Some(Protocol::ICMPV4))?
+        };
         socket.set_nonblocking(true)?;
         let client = TokioSocket2::new(socket)?;
 
@@ -65,7 +70,12 @@ mod tests {
         ];
         let seqs = vec![0, 1, 2, 3, 4, 5];
 
-        let socket = socket2::Socket::new(Domain::IPV6, Type::DGRAM, Some(Protocol::ICMPV6))?;
+        let socket = if cfg!(target_os = "linux") {
+            sudo::escalate_if_needed().unwrap();
+            socket2::Socket::new(Domain::IPV6, Type::RAW, Some(Protocol::ICMPV6))?
+        } else {
+            socket2::Socket::new(Domain::IPV6, Type::DGRAM, Some(Protocol::ICMPV6))?
+        };
         socket.set_nonblocking(true)?;
         let client = TokioSocket2::new(socket)?;
 
