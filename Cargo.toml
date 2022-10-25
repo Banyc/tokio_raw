@@ -9,3 +9,6 @@ edition = "2021"
 socket2 = "0.4.7"
 tokio = "1.21.2"
 tokio_socket2 = "0.1.0"
+
+[dev-dependencies]
+sudo = "0.6.0"
