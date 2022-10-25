@@ -9,7 +9,7 @@ mod tests {
     use socket2::{Domain, Protocol, SockAddr, Type};
 
     use crate::{
-        ipv4_payload,
+        get_eth_src_ipv4, ipv4_payload,
         tcp::{Ipv4PeerIps, Tcp},
     };
 
@@ -86,10 +86,7 @@ mod tests {
             .find(|addr| addr.is_ipv4())
             .expect("no ipv4 address found for www.google.com");
 
-        let src_ip_addr: Ipv4Addr = match local_ip_address::local_ip().unwrap() {
-            IpAddr::V4(ip) => ip,
-            IpAddr::V6(_) => panic!("ipv6 not supported"),
-        };
+        let src_ip_addr: Ipv4Addr = get_eth_src_ipv4()?;
         let dst_ip_addr: Ipv4Addr = match google_ipv4.ip() {
             IpAddr::V4(ip) => ip,
             IpAddr::V6(_) => unreachable!("ipv6 not supported"),

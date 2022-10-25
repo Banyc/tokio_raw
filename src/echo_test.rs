@@ -1,9 +1,13 @@
 #[cfg(test)]
 mod tests {
-    use std::{io, net::IpAddr};
+    use std::{
+        io,
+        net::{IpAddr, SocketAddr},
+    };
 
     use crate::{
         echo::{recv_echo, send_ipv4_echo, send_ipv6_echo},
+        get_eth_src_ipv4, get_eth_src_ipv6,
         icmp::IcmpEcho,
     };
     use socket2::{Domain, Protocol, Type};
@@ -25,7 +29,12 @@ mod tests {
         } else {
             socket2::Socket::new(Domain::IPV4, Type::DGRAM, Some(Protocol::ICMPV4))?
         };
+        let src_ip = get_eth_src_ipv4()?;
+        let src_addr = SocketAddr::new(src_ip.into(), 0);
+        socket.bind(&src_addr.into())?;
+
         socket.set_nonblocking(true)?;
+
         let client = TokioSocket2::new(socket)?;
 
         let identifier = std::process::id() as u16;
@@ -76,7 +85,12 @@ mod tests {
         } else {
             socket2::Socket::new(Domain::IPV6, Type::DGRAM, Some(Protocol::ICMPV6))?
         };
+        let src_ip = get_eth_src_ipv6()?;
+        let src_addr = SocketAddr::new(src_ip.into(), 0);
+        socket.bind(&src_addr.into())?;
+
         socket.set_nonblocking(true)?;
+
         let client = TokioSocket2::new(socket)?;
 
         let identifier = std::process::id() as u16;
