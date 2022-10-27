@@ -195,6 +195,7 @@ mod tests_not_macos {
     };
 
     use socket2::{Domain, Protocol, Type};
+    use tokio_socket2::TokioSocket2;
 
     use crate::{
         get_eth_src_ipv4, get_eth_src_ipv6, ipv4_payload,
@@ -271,53 +272,13 @@ mod tests_not_macos {
             eprintln!("written_len: {}", written_len);
         }
 
-        {
-            let mut buf = [0u8; 1024];
+        let mut buf = [0u8; 1024];
 
-            loop {
-                let (read_len, from, buf) = client
-                    .read(|socket| {
-                        let buf = unsafe {
-                            mem::transmute::<&mut [u8], &mut [mem::MaybeUninit<u8>]>(&mut buf)
-                        };
-                        let (read_len, from) = socket.recv_from(buf)?;
-                        let buf = unsafe {
-                            mem::transmute::<&mut [mem::MaybeUninit<u8>], &mut [u8]>(buf)
-                        };
-                        Ok((read_len, from, buf))
-                    })
-                    .await?;
+        let tcp = tcp_recv(&mut buf, &client, src_port, dst_addr, true).await?;
 
-                let from = match from.as_socket() {
-                    Some(from) => from,
-                    None => continue,
-                };
-
-                if from.ip() != dst_ip_addr {
-                    continue;
-                }
-
-                eprintln!("read_len: {}", read_len);
-
-                let pkt = &buf[..read_len];
-
-                let ip_payload = ipv4_payload(pkt)?;
-
-                let tcp = Tcp::decode(ip_payload)?;
-
-                if tcp.dst_port != src_port {
-                    continue;
-                }
-
-                assert_eq!(tcp.src_port, dst_port);
-                assert_eq!(tcp.dst_port, src_port);
-                assert_eq!(tcp.ack_num, 1);
-                assert_eq!(tcp.syn, true);
-                assert_eq!(tcp.ack, true);
-
-                break;
-            }
-        }
+        assert_eq!(tcp.ack_num, 1);
+        assert_eq!(tcp.syn, true);
+        assert_eq!(tcp.ack, true);
 
         Ok(())
     }
@@ -392,54 +353,64 @@ mod tests_not_macos {
             eprintln!("written_len: {}", written_len);
         }
 
-        {
-            let mut buf = [0u8; 1024];
+        let mut buf = [0u8; 1024];
 
-            loop {
-                let (read_len, from, buf) = client
-                    .read(|socket| {
-                        let buf = unsafe {
-                            mem::transmute::<&mut [u8], &mut [mem::MaybeUninit<u8>]>(&mut buf)
-                        };
-                        let (read_len, from) = socket.recv_from(buf)?;
-                        let buf = unsafe {
-                            mem::transmute::<&mut [mem::MaybeUninit<u8>], &mut [u8]>(buf)
-                        };
-                        Ok((read_len, from, buf))
-                    })
-                    .await?;
+        let tcp = tcp_recv(&mut buf, &client, src_port, dst_addr, true).await?;
 
-                let from = match from.as_socket() {
-                    Some(from) => from,
-                    None => continue,
-                };
-
-                if from.ip() != dst_ip_addr {
-                    continue;
-                }
-
-                eprintln!("read_len: {}", read_len);
-
-                let pkt = &buf[..read_len];
-
-                let ip_payload = pkt;
-
-                let tcp = Tcp::decode(ip_payload)?;
-
-                if tcp.dst_port != src_port {
-                    continue;
-                }
-
-                assert_eq!(tcp.src_port, dst_port);
-                assert_eq!(tcp.dst_port, src_port);
-                assert_eq!(tcp.ack_num, 1);
-                assert_eq!(tcp.syn, true);
-                assert_eq!(tcp.ack, true);
-
-                break;
-            }
-        }
+        assert_eq!(tcp.ack_num, 1);
+        assert_eq!(tcp.syn, true);
+        assert_eq!(tcp.ack, true);
 
         Ok(())
+    }
+
+    async fn tcp_recv<'buf>(
+        buf: &'buf mut [u8],
+        client: &TokioSocket2,
+        src_port: u16,
+        dst_addr: SocketAddr,
+        strip_ipv4_header: bool,
+    ) -> io::Result<Tcp<'buf>> {
+        loop {
+            let (read_len, from, buf) = client
+                .read(|socket| {
+                    let buf =
+                        unsafe { mem::transmute::<&mut [u8], &mut [mem::MaybeUninit<u8>]>(buf) };
+                    let (read_len, from) = socket.recv_from(buf)?;
+                    let buf =
+                        unsafe { mem::transmute::<&mut [mem::MaybeUninit<u8>], &mut [u8]>(buf) };
+                    Ok((read_len, from, buf))
+                })
+                .await?;
+
+            let from = match from.as_socket() {
+                Some(from) => from,
+                None => continue,
+            };
+
+            if from.ip() != dst_addr.ip() {
+                continue;
+            }
+
+            eprintln!("read_len: {}", read_len);
+
+            let pkt = &buf[..read_len];
+
+            let ip_payload = match (dst_addr.ip(), strip_ipv4_header) {
+                (IpAddr::V4(_), true) => ipv4_payload(pkt)?,
+                _ => pkt,
+            };
+
+            let tcp = Tcp::decode(ip_payload)?;
+
+            if tcp.dst_port != src_port {
+                continue;
+            }
+            if tcp.src_port != dst_addr.port() {
+                continue;
+            }
+
+            return Ok(tcp);
+        }
     }
 }
