@@ -228,7 +228,6 @@ mod tests_not_macos {
             dst_ip: dst_ip_addr,
         };
 
-        let src_addr = SocketAddr::new(src_ip_addr.into(), src_port);
         let dst_addr = SocketAddr::new(dst_ip_addr.into(), dst_port);
 
         let src_ip_0_addr = SocketAddr::new(src_ip_addr.into(), 0);
@@ -312,7 +311,6 @@ mod tests_not_macos {
             dst_ip: dst_ip_addr,
         };
 
-        let src_addr = SocketAddr::new(src_ip_addr.into(), src_port);
         let dst_addr = SocketAddr::new(dst_ip_addr.into(), dst_port);
 
         let src_ip_0_addr = SocketAddr::new(src_ip_addr.into(), 0);
