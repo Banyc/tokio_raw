@@ -70,15 +70,9 @@ pub async fn recv_echo<'buf>(
         let pkt = &buf[..pkt_len];
 
         // remove the IP header
-        let ip_payload = match from.ip() {
-            std::net::IpAddr::V4(_) => {
-                if strip_ipv4_header {
-                    ipv4_payload(pkt)?
-                } else {
-                    pkt
-                }
-            }
-            std::net::IpAddr::V6(_) => pkt,
+        let ip_payload = match (from.ip(), strip_ipv4_header) {
+            (IpAddr::V4(_), true) => ipv4_payload(pkt)?,
+            _ => pkt,
         };
 
         let pong = match from.ip() {
