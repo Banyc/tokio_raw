@@ -7,25 +7,9 @@ use std::{
 pub mod echo;
 pub mod echo_test;
 pub mod icmp;
+pub mod ip;
 pub mod tcp;
 pub mod tcp_test;
-
-pub fn ipv4_payload(pkt: &[u8]) -> io::Result<&[u8]> {
-    if pkt.len() < 20 {
-        return Err(io::Error::new(
-            io::ErrorKind::InvalidData,
-            "packet too short",
-        ));
-    }
-    let hdr_len = ((pkt[0] & 0x0f) as usize) * 4;
-    if pkt.len() < hdr_len {
-        return Err(io::Error::new(
-            io::ErrorKind::InvalidData,
-            "packet too short",
-        ));
-    }
-    Ok(&pkt[hdr_len..])
-}
 
 pub fn calculate_sum(data: &[u8], skip: Option<Range<usize>>) -> u32 {
     let mut sum = 0u32;

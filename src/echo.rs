@@ -5,7 +5,7 @@ use std::{
 
 use crate::{
     icmp::{IcmpEcho, IcmpKind, IcmpVersion},
-    ipv4_payload,
+    ip::ipv4_payload,
 };
 use socket2::SockAddr;
 use tokio_socket2::TokioSocket2;

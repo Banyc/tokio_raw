@@ -7,7 +7,10 @@ mod tests {
 
     use socket2::{Domain, Protocol, SockAddr, Type};
 
-    use crate::tcp::{Ipv4PeerIps, Ipv6PeerIps, PeerIps, Tcp};
+    use crate::{
+        ip::{Ipv4PeerIps, Ipv6PeerIps, PeerIps},
+        tcp::Tcp,
+    };
 
     #[tokio::test]
     async fn ipv4_tcp_syn() -> io::Result<()> {
@@ -198,8 +201,9 @@ mod tests_not_macos {
     use tokio_socket2::TokioSocket2;
 
     use crate::{
-        get_eth_src_ipv4, get_eth_src_ipv6, ipv4_payload,
-        tcp::{Ipv4PeerIps, Ipv6PeerIps, PeerIps, Tcp},
+        get_eth_src_ipv4, get_eth_src_ipv6,
+        ip::{ipv4_payload, Ipv4PeerIps, Ipv6PeerIps, PeerIps},
+        tcp::Tcp,
     };
 
     #[tokio::test]
