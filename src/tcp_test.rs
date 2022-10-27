@@ -27,7 +27,7 @@ mod tests {
             src_ip: src_ip_addr,
             dst_ip: dst_ip_addr,
         };
-        let dst_addr = SocketAddr::new(dst_ip_addr.into(), dst_port);
+        let dst_ip_0_addr = SocketAddr::new(dst_ip_addr.into(), 0);
 
         {
             let tcp = Tcp {
@@ -55,8 +55,8 @@ mod tests {
 
             let written_len = client
                 .write(|socket| {
-                    let dst_addr = SockAddr::from(dst_addr);
-                    let written_len = socket.send_to(&pkt, &dst_addr)?;
+                    let dst_ip_0_addr = SockAddr::from(dst_ip_0_addr);
+                    let written_len = socket.send_to(&pkt, &dst_ip_0_addr)?;
                     Ok(written_len)
                 })
                 .await?;
@@ -87,7 +87,7 @@ mod tests {
             src_ip: src_ip_addr,
             dst_ip: dst_ip_addr,
         };
-        let dst_addr = SocketAddr::new(dst_ip_addr.into(), dst_port);
+        let dst_ip_0_addr = SocketAddr::new(dst_ip_addr.into(), 0);
 
         {
             let mut buf = [0u8; 20];
@@ -115,8 +115,8 @@ mod tests {
 
             let written_len = client
                 .write(|socket| {
-                    let dst_addr = SockAddr::from(dst_addr);
-                    let written_len = socket.send_to(&pkt, &dst_addr)?;
+                    let dst_ip_0_addr = SockAddr::from(dst_ip_0_addr);
+                    let written_len = socket.send_to(&pkt, &dst_ip_0_addr)?;
                     Ok(written_len)
                 })
                 .await?;
@@ -145,7 +145,7 @@ mod tests {
             src_ip: src_ip_addr,
             dst_ip: dst_ip_addr,
         };
-        let dst_addr = SocketAddr::new(dst_ip_addr.into(), dst_port);
+        let dst_ip_0_addr = SocketAddr::new(dst_ip_addr.into(), 0);
 
         {
             let tcp = Tcp {
@@ -173,8 +173,8 @@ mod tests {
 
             let written_len = client
                 .write(|socket| {
-                    let dst_addr = SockAddr::from(dst_addr);
-                    let written_len = socket.send_to(&pkt, &dst_addr)?;
+                    let dst_ip_0_addr = SockAddr::from(dst_ip_0_addr);
+                    let written_len = socket.send_to(&pkt, &dst_ip_0_addr)?;
                     Ok(written_len)
                 })
                 .await?;
@@ -231,8 +231,11 @@ mod tests_not_macos {
         let src_addr = SocketAddr::new(src_ip_addr.into(), src_port);
         let dst_addr = SocketAddr::new(dst_ip_addr.into(), dst_port);
 
-        socket.bind(&src_addr.into())?;
-        socket.connect(&dst_addr.into())?;
+        let src_ip_0_addr = SocketAddr::new(src_ip_addr.into(), 0);
+        let dst_ip_0_addr = SocketAddr::new(dst_ip_addr.into(), 0);
+
+        socket.bind(&src_ip_0_addr.into())?;
+        socket.connect(&dst_ip_0_addr.into())?;
 
         let client = tokio_socket2::TokioSocket2::new(socket)?;
 
@@ -312,8 +315,11 @@ mod tests_not_macos {
         let src_addr = SocketAddr::new(src_ip_addr.into(), src_port);
         let dst_addr = SocketAddr::new(dst_ip_addr.into(), dst_port);
 
-        socket.bind(&src_addr.into())?;
-        socket.connect(&dst_addr.into())?;
+        let src_ip_0_addr = SocketAddr::new(src_ip_addr.into(), 0);
+        let dst_ip_0_addr = SocketAddr::new(dst_ip_addr.into(), 0);
+
+        socket.bind(&src_ip_0_addr.into())?;
+        socket.connect(&dst_ip_0_addr.into())?;
 
         let client = tokio_socket2::TokioSocket2::new(socket)?;
 
