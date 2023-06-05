@@ -68,8 +68,7 @@ impl<'buf> Tcp<'buf> {
         buf[12] = (data_offset << 4) as u8;
 
         // flags
-        buf[13] = 0
-            | if self.urg { 0b0010_0000 } else { 0 }
+        buf[13] = if self.urg { 0b0010_0000 } else { 0 }
             | if self.ack { 0b0001_0000 } else { 0 }
             | if self.psh { 0b0000_1000 } else { 0 }
             | if self.rst { 0b0000_0100 } else { 0 }
@@ -84,9 +83,9 @@ impl<'buf> Tcp<'buf> {
         buf[20..20 + self.options.len()].copy_from_slice(self.options);
 
         // padding
-        for i in 20 + self.options.len()..data_offset * 4 {
+        (20 + self.options.len()..data_offset * 4).for_each(|i| {
             buf[i] = 0;
-        }
+        });
 
         // data
         buf[data_offset * 4..data_offset * 4 + self.data.len()].copy_from_slice(self.data);
@@ -102,7 +101,7 @@ impl<'buf> Tcp<'buf> {
                     protocol: 6,
                     length: pkt.len() as u16,
                 };
-                let sum = ip_header.calculate_sum() as u32 + calculate_sum(pkt, None);
+                let sum = ip_header.calculate_sum() + calculate_sum(pkt, None);
                 let checksum = calculate_checksum(sum);
                 pkt[16..18].copy_from_slice(&(checksum).to_be_bytes());
             }
@@ -112,7 +111,7 @@ impl<'buf> Tcp<'buf> {
                     protocol: 6,
                     length: pkt.len() as u32,
                 };
-                let sum = ip_header.calculate_sum() as u32 + calculate_sum(pkt, None);
+                let sum = ip_header.calculate_sum() + calculate_sum(pkt, None);
                 let checksum = calculate_checksum(sum);
                 pkt[16..18].copy_from_slice(&(checksum).to_be_bytes());
             }

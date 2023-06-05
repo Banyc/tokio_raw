@@ -59,7 +59,7 @@ mod tests {
             let written_len = client
                 .write(|socket| {
                     let dst_ip_0_addr = SockAddr::from(dst_ip_0_addr);
-                    let written_len = socket.send_to(&pkt, &dst_ip_0_addr)?;
+                    let written_len = socket.send_to(pkt, &dst_ip_0_addr)?;
                     Ok(written_len)
                 })
                 .await?;
@@ -119,7 +119,7 @@ mod tests {
             let written_len = client
                 .write(|socket| {
                     let dst_ip_0_addr = SockAddr::from(dst_ip_0_addr);
-                    let written_len = socket.send_to(&pkt, &dst_ip_0_addr)?;
+                    let written_len = socket.send_to(pkt, &dst_ip_0_addr)?;
                     Ok(written_len)
                 })
                 .await?;
@@ -177,7 +177,7 @@ mod tests {
             let written_len = client
                 .write(|socket| {
                     let dst_ip_0_addr = SockAddr::from(dst_ip_0_addr);
-                    let written_len = socket.send_to(&pkt, &dst_ip_0_addr)?;
+                    let written_len = socket.send_to(pkt, &dst_ip_0_addr)?;
                     Ok(written_len)
                 })
                 .await?;

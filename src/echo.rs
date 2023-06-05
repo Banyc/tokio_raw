@@ -21,7 +21,7 @@ pub async fn send_ipv4_echo<'echo_buf>(
     let pkt_len = ping.encode(buf, IcmpVersion::V4)?;
     let pkt = &buf[..pkt_len];
     let dst = SockAddr::from(dst);
-    let written_len = client.write(|socket| socket.send_to(&pkt, &dst)).await?;
+    let written_len = client.write(|socket| socket.send_to(pkt, &dst)).await?;
     Ok(written_len)
 }
 
@@ -36,7 +36,7 @@ pub async fn send_ipv6_echo<'echo_buf>(
     let pkt_len = ping.encode(buf, IcmpVersion::V6)?;
     let pkt = &buf[..pkt_len];
     let dst = SockAddr::from(dst);
-    let written_len = client.write(|socket| socket.send_to(&pkt, &dst)).await?;
+    let written_len = client.write(|socket| socket.send_to(pkt, &dst)).await?;
     Ok(written_len)
 }
 
@@ -57,7 +57,7 @@ pub async fn recv_echo<'buf>(
             })
             .await?;
 
-        if let None = from.as_socket() {
+        if from.as_socket().is_none() {
             continue;
         }
 
